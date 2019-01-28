@@ -1,5 +1,7 @@
 package cn.intellimuyan.bardsymphony.nettyserver;
 
+import cn.intellimuyan.bardsymphony.nettyserver.inbound.BardCommandDecoder;
+import cn.intellimuyan.bardsymphony.nettyserver.outbound.BardCommandEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -55,12 +57,14 @@ public class NioServer {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        for (ChannelInboundHandlerAdapter inboundHandler : inboundHandlers) {
-                            pipeline.addLast(inboundHandler);
+                        pipeline.addLast(new BardCommandDecoder());
+                        for (ChannelInboundHandlerAdapter handler : inboundHandlers) {
+                            pipeline.addLast(handler);
                         }
-                        for (ChannelOutboundHandlerAdapter outboundHandler : outboundHandlers) {
-                            pipeline.addLast(outboundHandler);
+                        for (ChannelOutboundHandlerAdapter handler : outboundHandlers) {
+                            pipeline.addLast(handler);
                         }
+                        pipeline.addLast(new BardCommandEncoder());
                     }
                 })
                 .option(ChannelOption.SO_BACKLOG, 128)          // (5)
@@ -70,9 +74,7 @@ public class NioServer {
 
     @PreDestroy
     public void close() {
-        Future<?> f2 = workerGroup.shutdownGracefully();
-        Future<?> f3 = bossGroup.shutdownGracefully();
-        for (Future<?> future : Arrays.asList(f2, f3)) {
+        for (Future<?> future : Arrays.asList(workerGroup.shutdownGracefully(), bossGroup.shutdownGracefully())) {
             try {
                 future.get();
             } catch (InterruptedException | ExecutionException e) {

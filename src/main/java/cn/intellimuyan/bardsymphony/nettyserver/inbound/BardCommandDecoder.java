@@ -1,11 +1,11 @@
 package cn.intellimuyan.bardsymphony.nettyserver.inbound;
 
 import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommandDatum;
+import cn.intellimuyan.bardsymphony.nettyserver.model.CmdEnum;
+import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -13,8 +13,6 @@ import java.util.List;
  * @author hason
  * @version 19-1-28
  */
-@Service
-@Order(0)
 public class BardCommandDecoder extends ReplayingDecoder<Void> {
 
 
@@ -25,9 +23,9 @@ public class BardCommandDecoder extends ReplayingDecoder<Void> {
         byte[] content = new byte[length];
         in.readBytes(content);
         BardCommandDatum datum = new BardCommandDatum();
-        datum.setLength(length);
-        datum.setCmd(cmd);
-        datum.setPayload(new String(content));
+        CmdEnum c = CmdEnum.fromCode(cmd);
+        datum.setCmd(c);
+        datum.setPayload(JSON.parseObject(new String(content), c.getClz()));
         out.add(datum);
     }
 
