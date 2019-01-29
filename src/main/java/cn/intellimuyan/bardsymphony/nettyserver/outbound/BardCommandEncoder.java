@@ -1,7 +1,6 @@
 package cn.intellimuyan.bardsymphony.nettyserver.outbound;
 
-import cn.intellimuyan.bardsymphony.nettyserver.model.CmdEnum;
-import com.alibaba.fastjson.JSON;
+import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommandDatum;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandler;
@@ -18,13 +17,13 @@ public class BardCommandEncoder extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        Class<?> clz = msg.getClass();
-        CmdEnum cmd = CmdEnum.fromClz(clz);
+        BardCommandDatum datum = (BardCommandDatum) msg;
+        String payloadStr = datum.getPayload();
         ByteBuf byteBuf;
-        byte[] payload = JSON.toJSONBytes(msg);
+        byte[] payload = payloadStr == null ? new byte[0] : payloadStr.getBytes();
         byteBuf = ByteBufAllocator.DEFAULT.heapBuffer(Integer.BYTES * 2 + payload.length);
         byteBuf.writeInt(payload.length);
-        byteBuf.writeInt(cmd.getCode());
+        byteBuf.writeInt(datum.getCmd().getCode());
         byteBuf.writeBytes(payload);
         ctx.writeAndFlush(byteBuf);
     }

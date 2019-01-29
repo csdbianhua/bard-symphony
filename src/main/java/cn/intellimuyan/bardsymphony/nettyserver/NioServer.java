@@ -47,12 +47,12 @@ public class NioServer {
 
     @PostConstruct
     public void run() throws Exception {
-        bossGroup = new NioEventLoopGroup(); // (1)
+        bossGroup = new NioEventLoopGroup();
         workerGroup = new NioEventLoopGroup();
 
-        ServerBootstrap b = new ServerBootstrap(); // (2)
+        ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class) // (3)
+                .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
@@ -67,8 +67,8 @@ public class NioServer {
                         pipeline.addLast(new BardCommandEncoder());
                     }
                 })
-                .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-                .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+                .option(ChannelOption.SO_BACKLOG, 128)
+                .childOption(ChannelOption.SO_KEEPALIVE, true);
         b.bind(port).addListener(future -> log.info("[NioServer]started on port : {}", port));
     }
 

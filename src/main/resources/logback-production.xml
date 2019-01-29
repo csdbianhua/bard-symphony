@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="false" debug="false" scanPeriod="60 seconds"><!--scanPeriod="60 seconds" debug="false" -->
-
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="log_dir" value="/var/log/bardsymphony"/>
     <property name="FILE_LOG_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%t] %-40.40logger{39} : %m%n"/>
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <Pattern>${FILE_LOG_PATTERN}</Pattern>
+            <Pattern>${CONSOLE_LOG_PATTERN}</Pattern>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>DEBUG</level>
+            <level>INFO</level>
         </filter>
     </appender>
     <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">

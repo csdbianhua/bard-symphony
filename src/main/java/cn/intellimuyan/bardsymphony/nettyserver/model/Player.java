@@ -8,11 +8,14 @@ import lombok.Data;
 @Data
 public class Player {
     private final Channel channel;
-    private String name;
-    private String instrument;
+    private String name = "unknown";
+    private String instrument = "unknown";
 
-    public Player(Channel channel, JoinMsg joinMsg) {
+    public Player(Channel channel) {
         this.channel = channel;
+    }
+
+    public void setProfile(JoinMsg joinMsg) {
         this.name = joinMsg.getName();
         this.instrument = joinMsg.getInstrument();
     }

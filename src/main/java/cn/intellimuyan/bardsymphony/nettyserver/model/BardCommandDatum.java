@@ -10,6 +10,6 @@ import lombok.Data;
  */
 @Data
 public class BardCommandDatum {
-    private CmdEnum cmd;
-    private Object payload;
+    private CmdType cmd;
+    private String payload;
 }

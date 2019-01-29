@@ -1,8 +1,7 @@
 package cn.intellimuyan.bardsymphony.nettyserver.inbound;
 
 import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommandDatum;
-import cn.intellimuyan.bardsymphony.nettyserver.model.CmdEnum;
-import com.alibaba.fastjson.JSON;
+import cn.intellimuyan.bardsymphony.nettyserver.model.CmdType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
@@ -23,9 +22,9 @@ public class BardCommandDecoder extends ReplayingDecoder<Void> {
         byte[] content = new byte[length];
         in.readBytes(content);
         BardCommandDatum datum = new BardCommandDatum();
-        CmdEnum c = CmdEnum.fromCode(cmd);
+        CmdType c = CmdType.fromCode(cmd);
         datum.setCmd(c);
-        datum.setPayload(JSON.parseObject(new String(content), c.getClz()));
+        datum.setPayload(new String(content));
         out.add(datum);
     }
 

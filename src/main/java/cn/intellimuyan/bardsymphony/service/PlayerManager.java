@@ -3,6 +3,7 @@ package cn.intellimuyan.bardsymphony.service;
 import cn.intellimuyan.bardsymphony.nettyserver.model.Player;
 import cn.intellimuyan.bardsymphony.nettyserver.model.msg.PlayMsg;
 import io.netty.channel.Channel;
+import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,22 +12,35 @@ import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
-public class ClientManager {
+public class PlayerManager {
 
     private final Map<String, Set<Player>> instrumentPlayerMap = new HashMap<>();
     private final Map<Channel, Player> channelPlayerMap = new HashMap<>();
 
-    public synchronized void addClient(Player player) {
-        Player oldPlayer = channelPlayerMap.get(player.getChannel());
-        if (oldPlayer != null) {
-            oldPlayer.setName(player.getName());
-            oldPlayer.setInstrument(player.getInstrument());
-            player = oldPlayer;
-        }
+    private void addClient(Player player) {
         channelPlayerMap.put(player.getChannel(), player);
         Set<Player> set = instrumentPlayerMap.computeIfAbsent(player.getInstrument(), (a) -> new HashSet<>());
         set.add(player);
         log.info("[乐手加入] {}", player);
+    }
+
+    public Collection<Player> players() {
+        return Collections.unmodifiableCollection(channelPlayerMap.values());
+    }
+
+    public Player getPlayer(Channel channel) {
+        Player player = channelPlayerMap.get(channel);
+        if (player == null) {
+            synchronized (channelPlayerMap) {
+                player = channelPlayerMap.get(channel);
+                if (player != null) {
+                    return player;
+                }
+                player = new Player(channel);
+                addClient(player);
+            }
+        }
+        return player;
     }
 
     public void sendPlayCommand(PlayMsg playMsg) {
@@ -48,7 +62,8 @@ public class ClientManager {
         c.writeAndFlush(msg);
     }
 
-    public synchronized void removeClient(Channel channel) {
+    @Synchronized("channelPlayerMap")
+    public void removeClient(Channel channel) {
         Player player = channelPlayerMap.remove(channel);
         if (player == null) {
             return;
