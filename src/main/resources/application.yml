@@ -15,4 +15,5 @@ management:
       exposure:
         include: "*"
         exclude: shutdown
+      base-path: /manage
 
