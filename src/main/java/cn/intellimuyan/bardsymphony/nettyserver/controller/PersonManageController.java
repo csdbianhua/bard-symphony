@@ -6,29 +6,36 @@ import cn.intellimuyan.bardsymphony.nettyserver.model.CmdType;
 import cn.intellimuyan.bardsymphony.nettyserver.model.Player;
 import cn.intellimuyan.bardsymphony.nettyserver.model.msg.JoinMsg;
 import cn.intellimuyan.bardsymphony.service.PlayerManager;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author hason
  * @version 19-1-29
  */
 @NettyController
+@Slf4j
 public class PersonManageController {
 
-    private final PlayerManager clientManager;
+    private final PlayerManager playerManager;
 
-    public PersonManageController(PlayerManager clientManager) {
-        this.clientManager = clientManager;
+    public PersonManageController(PlayerManager playerManager) {
+        this.playerManager = playerManager;
     }
 
     @CmdMapping(mapping = CmdType.JOIN)
     public void join(Player player, JoinMsg joinMsg) {
-        player.setName(joinMsg.getName());
-        player.setInstrument(joinMsg.getInstrument());
+        player.setProfile(joinMsg);
+        Player oldPlayer = playerManager.addPlayer(player);
+        if (oldPlayer == null) {
+            log.info("[乐手管理] 加入 ->  {}", player);
+        } else {
+            log.info("[乐手管理] 更新 {} -> {}", oldPlayer, player);
+        }
     }
 
     @CmdMapping(mapping = CmdType.LEAVE)
     public void leave(Player player) {
-        clientManager.removeClient(player.getChannel());
+        playerManager.removeClient(player.getChannel());
     }
 
 }

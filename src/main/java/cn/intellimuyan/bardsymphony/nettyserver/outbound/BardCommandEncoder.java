@@ -1,6 +1,6 @@
 package cn.intellimuyan.bardsymphony.nettyserver.outbound;
 
-import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommandDatum;
+import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommand;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.channel.ChannelHandler;
@@ -17,7 +17,7 @@ public class BardCommandEncoder extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        BardCommandDatum datum = (BardCommandDatum) msg;
+        BardCommand datum = (BardCommand) msg;
         String payloadStr = datum.getPayload();
         ByteBuf byteBuf;
         byte[] payload = payloadStr == null ? new byte[0] : payloadStr.getBytes();

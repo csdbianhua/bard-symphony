@@ -3,9 +3,11 @@ package cn.intellimuyan.bardsymphony.nettyserver.model;
 import cn.intellimuyan.bardsymphony.nettyserver.model.msg.JoinMsg;
 import io.netty.channel.Channel;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data
+@EqualsAndHashCode(of = "channel")
 public class Player {
     private final Channel channel;
     private String name = "unknown";

@@ -1,10 +1,13 @@
 package cn.intellimuyan.bardsymphony;
 
 import cn.intellimuyan.bardsymphony.nettyserver.inbound.BardCommandDecoder;
+import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommand;
+import cn.intellimuyan.bardsymphony.nettyserver.model.CmdType;
 import cn.intellimuyan.bardsymphony.nettyserver.model.InstrumentEnum;
+import cn.intellimuyan.bardsymphony.nettyserver.model.msg.DirectMsg;
 import cn.intellimuyan.bardsymphony.nettyserver.model.msg.JoinMsg;
-import cn.intellimuyan.bardsymphony.nettyserver.model.msg.PlayMsg;
 import cn.intellimuyan.bardsymphony.nettyserver.outbound.BardCommandEncoder;
+import com.alibaba.fastjson.JSON;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
@@ -26,10 +29,10 @@ public class TestClient {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
-            Bootstrap b = new Bootstrap(); // (1)
-            b.group(workerGroup); // (2)
-            b.channel(NioSocketChannel.class); // (3)
-            b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
+            Bootstrap b = new Bootstrap();
+            b.group(workerGroup);
+            b.channel(NioSocketChannel.class);
+            b.option(ChannelOption.SO_KEEPALIVE, true);
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
@@ -38,7 +41,7 @@ public class TestClient {
 
                                 @Override
                                 public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                                    System.out.println(msg);
+                                    System.out.println("弹奏:" + msg);
                                 }
                             }
                     ).addLast(new BardCommandEncoder());
@@ -47,27 +50,27 @@ public class TestClient {
 
             // Start the client.
             ChannelFuture f = b.connect("localhost", 9999).sync(); // (5)
+            Thread.sleep(3000);
             Channel ctx = f.channel();
+            BardCommand cmd = new BardCommand();
+            cmd.setCmd(CmdType.JOIN);
             JoinMsg joinMsg = new JoinMsg();
             joinMsg.setName("Jay");
             joinMsg.setInstrument(InstrumentEnum.PIANO.name());
-            ctx.writeAndFlush(joinMsg);
+            cmd.setPayload(JSON.toJSONString(joinMsg));
+            ctx.writeAndFlush(cmd);
+            Thread.sleep(3000);
             List<String> lines = Files.readAllLines(Paths.get(new ClassPathResource("music.bsy").getURI()));
-            for (int i = 0; i < lines.size(); i++) {
-                String note = lines.get(i);
-                String nextNote;
-                if ((i + 1) >= lines.size()) {
-                    nextNote = "null";
-                } else {
-                    nextNote = lines.get(i + 1);
-                }
-                PlayMsg msg = new PlayMsg();
+            for (String note : lines) {
+                DirectMsg msg = new DirectMsg();
                 msg.setNote(note);
                 msg.setInstrument(InstrumentEnum.PIANO.name());
-                ctx.write(msg);
+                BardCommand playCmd = new BardCommand();
+                playCmd.setCmd(CmdType.DIRECT);
+                playCmd.setPayload(JSON.toJSONString(msg));
+                ctx.writeAndFlush(playCmd);
             }
-            ctx.flush();
-            // Wait until the connection is closed.
+
             f.channel().closeFuture().sync();
         } finally {
             workerGroup.shutdownGracefully();

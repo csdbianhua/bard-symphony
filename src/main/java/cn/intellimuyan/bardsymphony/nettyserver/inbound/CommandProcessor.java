@@ -2,7 +2,7 @@ package cn.intellimuyan.bardsymphony.nettyserver.inbound;
 
 import cn.intellimuyan.bardsymphony.nettyserver.framework.anno.CmdMapping;
 import cn.intellimuyan.bardsymphony.nettyserver.framework.anno.NettyController;
-import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommandDatum;
+import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommand;
 import cn.intellimuyan.bardsymphony.nettyserver.model.CmdType;
 import cn.intellimuyan.bardsymphony.nettyserver.model.Player;
 import cn.intellimuyan.bardsymphony.service.PlayerManager;
@@ -116,11 +116,11 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BardCommandDatum datum = (BardCommandDatum) msg;
+        BardCommand datum = (BardCommand) msg;
         processDatum(ctx, datum);
     }
 
-    private void processDatum(ChannelHandlerContext ctx, BardCommandDatum datum) {
+    private void processDatum(ChannelHandlerContext ctx, BardCommand datum) {
         CmdType cmd = datum.getCmd();
         Invoker invoker = map.get(cmd);
         if (invoker == null) {
@@ -131,7 +131,7 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
         Object[] args = generateArgs(ctx, invoker, payload);
         Object result = invoker.invoke(args);
         if (invoker.hasResponse) {
-            BardCommandDatum response = new BardCommandDatum();
+            BardCommand response = new BardCommand();
             response.setPayload(JSON.toJSONString(result));
             response.setCmd(invoker.getReturnType());
             ctx.write(response);
@@ -169,7 +169,7 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        BardCommandDatum datum = new BardCommandDatum();
+        BardCommand datum = new BardCommand();
         datum.setCmd(CmdType.LEAVE);
         processDatum(ctx, datum);
         ctx.fireChannelInactive();

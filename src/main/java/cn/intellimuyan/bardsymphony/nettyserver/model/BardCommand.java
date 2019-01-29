@@ -9,7 +9,7 @@ import lombok.Data;
  * @version 19-1-28
  */
 @Data
-public class BardCommandDatum {
+public class BardCommand {
     private CmdType cmd;
     private String payload;
 }

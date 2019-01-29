@@ -1,7 +1,6 @@
 package cn.intellimuyan.bardsymphony.service;
 
 import cn.intellimuyan.bardsymphony.nettyserver.model.Player;
-import cn.intellimuyan.bardsymphony.nettyserver.model.msg.PlayMsg;
 import io.netty.channel.Channel;
 import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +16,13 @@ public class PlayerManager {
     private final Map<String, Set<Player>> instrumentPlayerMap = new HashMap<>();
     private final Map<Channel, Player> channelPlayerMap = new HashMap<>();
 
-    private void addClient(Player player) {
+    @Synchronized("channelPlayerMap")
+    public Player addPlayer(Player player) {
+        Player oldPlayer = channelPlayerMap.get(player.getChannel());
         channelPlayerMap.put(player.getChannel(), player);
         Set<Player> set = instrumentPlayerMap.computeIfAbsent(player.getInstrument(), (a) -> new HashSet<>());
         set.add(player);
-        log.info("[乐手加入] {}", player);
+        return oldPlayer;
     }
 
     public Collection<Player> players() {
@@ -29,22 +30,21 @@ public class PlayerManager {
     }
 
     public Player getPlayer(Channel channel) {
-        Player player = channelPlayerMap.get(channel);
-        if (player == null) {
-            synchronized (channelPlayerMap) {
-                player = channelPlayerMap.get(channel);
-                if (player != null) {
-                    return player;
-                }
-                player = new Player(channel);
-                addClient(player);
-            }
+        Player result = channelPlayerMap.get(channel);
+        if (result == null) {
+            return new Player(channel);
+        } else {
+            return result;
         }
-        return player;
     }
 
-    public void sendPlayCommand(PlayMsg playMsg) {
-        String instrument = playMsg.getInstrument();
+    /**
+     * 根据乐器种类获取一名乐手，如果此乐器没有乐手，则随机选择其他乐手
+     *
+     * @param instrument 乐器种类
+     * @return 乐手
+     */
+    public Player getPlayerByInstrument(String instrument) {
         Set<Player> players = instrumentPlayerMap.get(instrument);
         if (players == null || players.isEmpty()) {
             players = instrumentPlayerMap.values().iterator().next();
@@ -54,12 +54,7 @@ public class PlayerManager {
         for (int i = 0; i < idx; i++) {
             it.next();
         }
-        sendPlayCommand(it.next(), playMsg);
-    }
-
-    private void sendPlayCommand(Player player, PlayMsg msg) {
-        Channel c = player.getChannel();
-        c.writeAndFlush(msg);
+        return it.next();
     }
 
     @Synchronized("channelPlayerMap")
@@ -70,7 +65,7 @@ public class PlayerManager {
         }
         Set<Player> players = instrumentPlayerMap.get(player.getInstrument());
         if (players != null) {
-            players.remove(player);
+            players.removeIf(p -> p.getChannel() == channel);
             if (players.isEmpty()) {
                 instrumentPlayerMap.remove(player.getInstrument());
             }

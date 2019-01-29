@@ -16,6 +16,7 @@ public enum CmdType {
     JOIN(1),
     LEAVE(-1),
     PLAY(2),
+    DIRECT(4),
     MSG(3);
 
     private static final Map<Integer, CmdType> MAP;
