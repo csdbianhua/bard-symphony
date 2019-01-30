@@ -15,7 +15,6 @@ public class OutboundExceptionHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        ctx.close();
         log.error("[NioServer]异常结束", cause);
     }
 }
