@@ -11,7 +11,7 @@ public class DirectMsg {
 
     private String note;
     /**
-     * 乐器
+     * 乐手id
      */
-    private String instrument;
+    private String id;
 }

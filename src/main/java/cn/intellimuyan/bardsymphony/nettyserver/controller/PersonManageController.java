@@ -5,6 +5,7 @@ import cn.intellimuyan.bardsymphony.nettyserver.framework.anno.NettyController;
 import cn.intellimuyan.bardsymphony.nettyserver.model.CmdType;
 import cn.intellimuyan.bardsymphony.nettyserver.model.Player;
 import cn.intellimuyan.bardsymphony.nettyserver.model.msg.JoinMsg;
+import cn.intellimuyan.bardsymphony.nettyserver.model.msg.QueryPlayerMsg;
 import cn.intellimuyan.bardsymphony.service.PlayerManager;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,4 +39,11 @@ public class PersonManageController {
         playerManager.removeClient(player.getChannel());
     }
 
+    @CmdMapping(mapping = CmdType.QUERY_PLAYER,
+            returning = CmdType.QUERY_PLAYER_RESULT)
+    public QueryPlayerMsg players() {
+        QueryPlayerMsg msg = new QueryPlayerMsg();
+        msg.setPlayers(playerManager.players());
+        return msg;
+    }
 }

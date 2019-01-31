@@ -14,10 +14,12 @@ import java.util.TreeMap;
 public enum CmdType {
     NONE(0),
     JOIN(1),
-    LEAVE(-1),
-    PLAY(2),
+    LEAVE(2),
+    PLAY(3),
     DIRECT(4),
-    MSG(3);
+    QUERY_PLAYER(5),
+    QUERY_PLAYER_RESULT(-5),
+    MSG(6);
 
     private static final Map<Integer, CmdType> MAP;
 

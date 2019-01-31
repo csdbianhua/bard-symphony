@@ -7,12 +7,14 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelOutboundHandlerAdapter;
 import io.netty.channel.ChannelPromise;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author hason
  * @version 19-1-28
  */
 @ChannelHandler.Sharable
+@Slf4j
 public class BardCommandEncoder extends ChannelOutboundHandlerAdapter {
 
     @Override
@@ -26,5 +28,8 @@ public class BardCommandEncoder extends ChannelOutboundHandlerAdapter {
         byteBuf.writeInt(datum.getCmd().getCode());
         byteBuf.writeBytes(payload);
         ctx.writeAndFlush(byteBuf);
+        if (log.isDebugEnabled()) {
+            log.debug("[输出数据]{}", msg);
+        }
     }
 }

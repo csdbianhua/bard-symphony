@@ -7,19 +7,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 @Slf4j
 public class PlayerManager {
 
     private final Map<String, Set<Player>> instrumentPlayerMap = new HashMap<>();
-    private final Map<Channel, Player> channelPlayerMap = new HashMap<>();
+    private final Map<String, Player> channelPlayerMap = new HashMap<>();
 
     @Synchronized("channelPlayerMap")
     public Player addPlayer(Player player) {
-        Player oldPlayer = channelPlayerMap.get(player.getChannel());
-        channelPlayerMap.put(player.getChannel(), player);
+        String id = player.getChannel().id().asShortText();
+        Player oldPlayer = channelPlayerMap.get(id);
+        channelPlayerMap.put(id, player);
         Set<Player> set = instrumentPlayerMap.computeIfAbsent(player.getInstrument(), (a) -> new HashSet<>());
         set.add(player);
         return oldPlayer;
@@ -39,27 +39,18 @@ public class PlayerManager {
     }
 
     /**
-     * 根据乐器种类获取一名乐手，如果此乐器没有乐手，则随机选择其他乐手
+     * 根据id获取一名乐手
      *
-     * @param instrument 乐器种类
+     * @param id
      * @return 乐手
      */
-    public Player getPlayerByInstrument(String instrument) {
-        Set<Player> players = instrumentPlayerMap.get(instrument);
-        if (players == null || players.isEmpty()) {
-            players = instrumentPlayerMap.values().iterator().next();
-        }
-        Iterator<Player> it = players.iterator();
-        int idx = ThreadLocalRandom.current().nextInt(players.size());
-        for (int i = 0; i < idx; i++) {
-            it.next();
-        }
-        return it.next();
+    public Optional<Player> getPlayer(String id) {
+        return Optional.ofNullable(channelPlayerMap.get(id));
     }
 
     @Synchronized("channelPlayerMap")
     public void removeClient(Channel channel) {
-        Player player = channelPlayerMap.remove(channel);
+        Player player = channelPlayerMap.remove(channel.id().asShortText());
         if (player == null) {
             return;
         }
@@ -70,7 +61,6 @@ public class PlayerManager {
                 instrumentPlayerMap.remove(player.getInstrument());
             }
         }
-        log.info("[乐手离开] {}", player);
 
     }
 }

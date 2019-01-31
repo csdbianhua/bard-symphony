@@ -64,7 +64,7 @@ public class TestClient {
             for (String note : lines) {
                 DirectMsg msg = new DirectMsg();
                 msg.setNote(note);
-                msg.setInstrument(InstrumentEnum.PIANO.name());
+                msg.setId("0");
                 BardCommand playCmd = new BardCommand();
                 playCmd.setCmd(CmdType.DIRECT);
                 playCmd.setPayload(JSON.toJSONString(msg));
