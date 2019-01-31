@@ -132,7 +132,7 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
         Object result = invoker.invoke(args);
         if (invoker.hasResponse) {
             BardCommand response = new BardCommand();
-            response.setPayload(JSON.toJSONString(result));
+            response.setPayload(result != null ? JSON.toJSONString(result) : "{}");
             response.setCmd(invoker.getReturnType());
             ctx.write(response);
         }
@@ -158,7 +158,6 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
                 if (json == null) {
                     json = JSON.parseObject(payload);
                 }
-                // todo 目前只有基础类型可以自动绑定,需要实现转换器的功能
                 args[index] = json.get(name);
             }
             index++;
