@@ -35,6 +35,9 @@ public class BardCommandDecoder extends ReplayingDecoder<Void> {
         datum.setCmd(c);
         datum.setPayload(new String(content));
         out.add(datum);
+        if (log.isDebugEnabled()) {
+            log.debug("[输入数据]{}", datum);
+        }
     }
 
 

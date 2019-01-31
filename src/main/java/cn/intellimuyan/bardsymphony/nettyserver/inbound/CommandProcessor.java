@@ -134,7 +134,7 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
             BardCommand response = new BardCommand();
             response.setPayload(result != null ? JSON.toJSONString(result) : "{}");
             response.setCmd(invoker.getReturnType());
-            ctx.write(response);
+            ctx.channel().writeAndFlush(response);
         }
     }
 
