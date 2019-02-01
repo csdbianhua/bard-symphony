@@ -3,17 +3,7 @@ spring:
     name: bard-symphony
   profiles:
     active: production
-server:
-  port: 7966
 
 logging:
   config: classpath:logback-${spring.profiles.active}.xml
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-        exclude: shutdown
-      base-path: /manage
 
