@@ -26,7 +26,13 @@ public class PlayerManager {
     }
 
     public Collection<Player> players() {
-        return Collections.unmodifiableCollection(channelPlayerMap.values());
+        Collection<Player> collections = channelPlayerMap.values();
+        collections.forEach(p -> {
+            if (!p.getChannel().isActive() && !p.getChannel().isOpen()) {
+                removeClient(p.getChannel());
+            }
+        });
+        return Collections.unmodifiableCollection(collections);
     }
 
     public Player getPlayer(Channel channel) {
