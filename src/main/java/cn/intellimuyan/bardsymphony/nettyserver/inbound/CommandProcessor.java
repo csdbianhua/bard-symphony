@@ -109,7 +109,8 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
                     }
                 }
                 map.put(mapping, invoker);
-                log.info("[命令映射] {} -> {}.{} (response:? {})", mapping, simpleClassName, method.getName(), hasResponse);
+                log.info("[CommandMapping] {} -> {}.{} (response:? {})", mapping, simpleClassName, method.getName(),
+                        hasResponse ? returning : CmdType.NONE);
             }
         }
     }

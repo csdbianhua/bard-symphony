@@ -4,6 +4,8 @@ import cn.intellimuyan.bardsymphony.nettyserver.inbound.BardCommandDecoder;
 import cn.intellimuyan.bardsymphony.nettyserver.outbound.BardCommandEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -47,12 +49,19 @@ public class NioServer {
 
     @PostConstruct
     public void run() throws Exception {
-        bossGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup();
-
+        String os = System.getProperty("os.name");
+        boolean isUnix = os.contains("nix") || os.contains("nux") || os.contains("aix");
+        if (isUnix) {
+            log.info("[NioServer]detected *nix operating system, use epoll : {}", os);
+            bossGroup = new EpollEventLoopGroup();
+            workerGroup = new EpollEventLoopGroup();
+        } else {
+            bossGroup = new NioEventLoopGroup();
+            workerGroup = new NioEventLoopGroup();
+        }
         ServerBootstrap b = new ServerBootstrap();
         b.group(bossGroup, workerGroup)
-                .channel(NioServerSocketChannel.class)
+                .channel(isUnix ? EpollServerSocketChannel.class : NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<SocketChannel>() { // (4)
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
