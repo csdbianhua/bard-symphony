@@ -4,8 +4,7 @@ import cn.intellimuyan.bardsymphony.nettyserver.model.BardCommand;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelOutboundHandlerAdapter;
-import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.MessageToByteEncoder;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -14,19 +13,15 @@ import lombok.extern.slf4j.Slf4j;
  */
 @ChannelHandler.Sharable
 @Slf4j
-public class BardCommandEncoder extends ChannelOutboundHandlerAdapter {
+public class BardCommandEncoder extends MessageToByteEncoder<BardCommand> {
 
     @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        BardCommand datum = (BardCommand) msg;
-        String payloadStr = datum.getPayload();
-        ByteBuf byteBuf;
+    protected void encode(ChannelHandlerContext ctx, BardCommand msg, ByteBuf out) throws Exception {
+        String payloadStr = msg.getPayload();
         byte[] payload = payloadStr == null ? new byte[0] : payloadStr.getBytes();
-        byteBuf = ctx.alloc().heapBuffer(Integer.BYTES * 2 + payload.length);
-        byteBuf.writeInt(payload.length);
-        byteBuf.writeInt(datum.getCmd().getCode());
-        byteBuf.writeBytes(payload);
-        ctx.writeAndFlush(byteBuf);
+        out.writeInt(Integer.BYTES + payload.length);
+        out.writeInt(msg.getCmd().getCode());
+        out.writeBytes(payload);
         if (log.isDebugEnabled()) {
             log.debug("[输出数据]{}", msg);
         }

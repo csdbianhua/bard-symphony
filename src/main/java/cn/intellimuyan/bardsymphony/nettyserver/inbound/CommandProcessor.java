@@ -10,7 +10,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.SneakyThrows;
@@ -19,7 +19,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import javax.annotation.PostConstruct;
 import java.lang.reflect.Method;
@@ -30,7 +29,7 @@ import java.util.*;
 @Order(1)
 @Slf4j
 @ChannelHandler.Sharable
-public class CommandProcessor extends ChannelInboundHandlerAdapter {
+public class CommandProcessor extends SimpleChannelInboundHandler<BardCommand> {
 
     private final Map<CmdType, Invoker> map = new HashMap<>();
     private final ApplicationContext ctx;
@@ -116,24 +115,17 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BardCommand datum = (BardCommand) msg;
-        processDatum(ctx, datum);
-    }
-
-    private void processDatum(ChannelHandlerContext ctx, BardCommand datum) {
-        CmdType cmd = datum.getCmd();
+    protected void channelRead0(ChannelHandlerContext ctx, BardCommand msg) throws Exception {
+        CmdType cmd = msg.getCmd();
         Invoker invoker = map.get(cmd);
         if (invoker == null) {
             return;
         }
-        String payload = datum.getPayload();
-
-        Object[] args = generateArgs(ctx, invoker, payload);
+        Object[] args = generateArgs(ctx, invoker, msg.getPayload());
         Object result = invoker.invoke(args);
         if (invoker.hasResponse) {
             BardCommand response = new BardCommand();
-            response.setPayload(result != null ? JSON.toJSONString(result) : "{}");
+            response.setPayload(result != null ? JSON.toJSONString(result) : null);
             response.setCmd(invoker.getReturnType());
             ctx.channel().writeAndFlush(response);
         }
@@ -143,9 +135,6 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
         Map<String, ParameterDesc> parameters = invoker.getParameters();
         Object[] args = new Object[parameters.size()];
         int index = 0;
-        if (StringUtils.isEmpty(payload)) {
-            payload = "{}";
-        }
         JSONObject json = null;
         for (Map.Entry<String, ParameterDesc> entry : parameters.entrySet()) {
             String name = entry.getKey();
@@ -158,6 +147,9 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
             } else {
                 if (json == null) {
                     json = JSON.parseObject(payload);
+                    if (json == null) {
+                        json = new JSONObject(0);
+                    }
                 }
                 args[index] = json.get(name);
             }
@@ -171,7 +163,7 @@ public class CommandProcessor extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         BardCommand datum = new BardCommand();
         datum.setCmd(CmdType.LEAVE);
-        processDatum(ctx, datum);
+        channelRead0(ctx, datum);
         ctx.fireChannelInactive();
     }
 }

@@ -1,4 +1,4 @@
-package cn.intellimuyan.bardsymphony.nettyserver.outbound;
+package cn.intellimuyan.bardsymphony.nettyserver.inbound;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Order
 @Slf4j
 @ChannelHandler.Sharable
-public class OutboundExceptionHandler extends ChannelOutboundHandlerAdapter {
+public class InboundExceptionHandler extends ChannelOutboundHandlerAdapter {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
