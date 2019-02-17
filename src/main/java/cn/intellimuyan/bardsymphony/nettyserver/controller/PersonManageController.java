@@ -9,6 +9,8 @@ import cn.intellimuyan.bardsymphony.nettyserver.model.msg.QueryPlayerMsg;
 import cn.intellimuyan.bardsymphony.service.PlayerManager;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Optional;
+
 /**
  * @author hason
  * @version 19-1-29
@@ -26,8 +28,8 @@ public class PersonManageController {
     @CmdMapping(mapping = CmdType.JOIN)
     public void join(Player player, JoinMsg joinMsg) {
         player.setProfile(joinMsg);
-        Player oldPlayer = playerManager.addPlayer(player);
-        if (oldPlayer == null) {
+        Optional<Player> oldPlayer = playerManager.addPlayer(player);
+        if (!oldPlayer.isPresent()) {
             log.info("[乐手管理] 加入 ->  {}", player);
         } else {
             log.info("[乐手管理] 更新 {} -> {}", oldPlayer, player);

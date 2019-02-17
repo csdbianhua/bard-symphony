@@ -141,7 +141,7 @@ public class CommandProcessor extends SimpleChannelInboundHandler<BardCommand> {
             ParameterDesc desc = entry.getValue();
             Class<?> clz = desc.getClz();
             if (desc.isPlayer()) {
-                args[index] = clientManager.getPlayer(ctx.channel());
+                args[index] = clientManager.getOrNewPlayer(ctx.channel());
             } else if (desc.isTreatAsPojo()) {
                 args[index] = JSON.parseObject(payload, clz);
             } else {

@@ -69,7 +69,7 @@ public class SymphonyServer {
                     @Override
                     public void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
-                        p.addLast(new IdleStateHandler(0, 0, 60, TimeUnit.SECONDS));
+                        p.addLast(new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS));
                         p.addLast(new HeartbeatHandler());
                         p.addLast(new LengthFieldBasedFrameDecoder(64 * 1024, 0, Integer.BYTES));
                         p.addLast(new BardCommandDecoder());

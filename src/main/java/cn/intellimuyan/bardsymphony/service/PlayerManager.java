@@ -16,38 +16,28 @@ public class PlayerManager {
     private final Map<String, Player> channelPlayerMap = new HashMap<>();
 
     @Synchronized("channelPlayerMap")
-    public Player addPlayer(Player player) {
+    public Optional<Player> addPlayer(Player player) {
         String id = player.getChannel().id().asShortText();
-        Player oldPlayer = channelPlayerMap.get(id);
+        Optional<Player> oldPlayerOpt = getPlayer(id);
         channelPlayerMap.put(id, player);
         Set<Player> set = instrumentPlayerMap.computeIfAbsent(player.getInstrument(), (a) -> new HashSet<>());
         set.add(player);
-        return oldPlayer;
+        return oldPlayerOpt;
     }
 
     public Collection<Player> players() {
-        Collection<Player> collections = channelPlayerMap.values();
-        collections.forEach(p -> {
-            if (!p.getChannel().isActive() && !p.getChannel().isOpen()) {
-                removeClient(p.getChannel());
-            }
-        });
-        return Collections.unmodifiableCollection(collections);
+        return new ArrayList<>(channelPlayerMap.values());
     }
 
-    public Player getPlayer(Channel channel) {
-        Player result = channelPlayerMap.get(channel);
-        if (result == null) {
-            return new Player(channel);
-        } else {
-            return result;
-        }
+    public Player getOrNewPlayer(Channel channel) {
+        Optional<Player> opt = getPlayer(channel.id().asShortText());
+        return opt.orElseGet(() -> new Player(channel));
     }
 
     /**
      * 根据id获取一名乐手
      *
-     * @param id
+     * @param id channel的id
      * @return 乐手
      */
     public Optional<Player> getPlayer(String id) {
