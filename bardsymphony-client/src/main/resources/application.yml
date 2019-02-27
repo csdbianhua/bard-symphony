@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: bard-client
+  profiles:
+    active: player
