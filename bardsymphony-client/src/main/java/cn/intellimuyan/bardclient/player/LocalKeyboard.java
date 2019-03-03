@@ -19,7 +19,7 @@ import java.util.Map;
 @Slf4j
 public class LocalKeyboard implements IKeyboard {
 
-    private Robot r;
+    private final Robot r;
 
     public LocalKeyboard() throws AWTException {
         r = new Robot();
@@ -63,9 +63,12 @@ public class LocalKeyboard implements IKeyboard {
             log.warn("Key does not exist : {}", MusicUtils.numberToNote(note));
             return;
         }
-        r.keyPress(keyToPress);
-        r.delay(1);
-        r.keyRelease(keyToPress);
+        synchronized (r) {
+            r.keyPress(keyToPress);
+            r.delay(10);
+            r.keyRelease(keyToPress);
+        }
+
     }
 
 
