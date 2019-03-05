@@ -7,6 +7,6 @@ public class PlayMsg {
     /**
      * 音符
      */
-    private String note;
+    private int note;
 
 }

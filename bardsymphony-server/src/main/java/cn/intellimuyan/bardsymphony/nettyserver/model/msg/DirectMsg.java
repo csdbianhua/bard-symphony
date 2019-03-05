@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 public class DirectMsg {
 
-    private String note;
+    private int note;
     /**
      * 乐手id
      */
