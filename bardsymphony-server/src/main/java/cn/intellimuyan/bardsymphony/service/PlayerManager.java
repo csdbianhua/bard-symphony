@@ -12,7 +12,6 @@ import java.util.*;
 @Slf4j
 public class PlayerManager {
 
-    private final Map<String, Set<Player>> instrumentPlayerMap = new HashMap<>();
     private final Map<String, Player> channelPlayerMap = new HashMap<>();
 
     @Synchronized("channelPlayerMap")
@@ -20,8 +19,6 @@ public class PlayerManager {
         String id = player.getChannel().id().asShortText();
         Optional<Player> oldPlayerOpt = getPlayer(id);
         channelPlayerMap.put(id, player);
-        Set<Player> set = instrumentPlayerMap.computeIfAbsent(player.getInstrument(), (a) -> new HashSet<>());
-        set.add(player);
         return oldPlayerOpt;
     }
 
@@ -46,17 +43,7 @@ public class PlayerManager {
 
     @Synchronized("channelPlayerMap")
     public void removeClient(Channel channel) {
-        Player player = channelPlayerMap.remove(channel.id().asShortText());
-        if (player == null) {
-            return;
-        }
-        Set<Player> players = instrumentPlayerMap.get(player.getInstrument());
-        if (players != null) {
-            players.removeIf(p -> p.getChannel() == channel);
-            if (players.isEmpty()) {
-                instrumentPlayerMap.remove(player.getInstrument());
-            }
-        }
+        channelPlayerMap.remove(channel.id().asShortText());
 
     }
 }

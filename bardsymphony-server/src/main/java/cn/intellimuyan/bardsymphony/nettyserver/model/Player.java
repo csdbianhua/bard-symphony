@@ -13,7 +13,6 @@ public class Player {
     @JSONField(serialize = false, deserialize = false)
     private final Channel channel;
     private String name = "unknown";
-    private String instrument = "unknown";
 
     public Player(Channel channel) {
         this.channel = channel;
@@ -21,7 +20,6 @@ public class Player {
 
     public void setProfile(JoinMsg joinMsg) {
         this.name = joinMsg.getName();
-        this.instrument = joinMsg.getInstrument();
     }
 
     public String getId() {
@@ -30,6 +28,6 @@ public class Player {
 
     @Override
     public String toString() {
-        return String.format("{%s} - %s[%s]", instrument, name, getId());
+        return String.format("%s[%s]", name, getId());
     }
 }
